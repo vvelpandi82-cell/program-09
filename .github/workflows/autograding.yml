@@ -1,0 +1,42 @@
+name: RDBMS INNER JOIN Autograding
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: CollegeDB
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Check MySQL
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -uroot -proot -e "SELECT VERSION();"
+
+      - name: Make test.sh executable
+        run: |
+          chmod +x test.sh
+
+      - name: Run Autograding
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        run: |
+          ./test.sh
